@@ -1,9 +1,9 @@
+import { env } from '@/config/env'
 import { prisma } from '@/server/services/database/prisma'
-import { PrismaAdapter } from '@next-auth/prisma-adapter'
+import { PrismaAdapter } from '@auth/prisma-adapter'
+
 import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
-
-import { env } from '@/config/env'
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   pages: {
