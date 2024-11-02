@@ -32,7 +32,7 @@ export async function hasAccountInGoogle(email: string): Promise<boolean> {
 
 export async function validateCredentials(
   email: string,
-  password: string
+  password: string,
 ): Promise<boolean> {
   const user = await prisma.user.findUnique({
     where: {

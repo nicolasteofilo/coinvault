@@ -53,7 +53,7 @@ export function LoginForm() {
     } else {
       const isValidCredentials = await validateCredentials(
         data.email,
-        data.password
+        data.password,
       )
 
       if (!isValidCredentials) {
@@ -109,6 +109,7 @@ export function LoginForm() {
                   placeholder='Insira seu endereço de e-mail'
                   className='w-full'
                   error={form.formState.errors.email?.message}
+                  value={undefined}
                 />
               )}
             />
@@ -122,6 +123,7 @@ export function LoginForm() {
                   placeholder='Insira sua senha'
                   type='text'
                   error={form.formState.errors.password?.message}
+                  value={undefined}
                 />
               )}
             />

@@ -13,12 +13,17 @@ import { Form, FormField } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 
 import { GoogleIcon } from '@/assets/icons/google'
+import { env } from '@/config/env'
 import { useToast } from '@/hooks/use-toast'
 import { signIn as signInGoogle } from '@/server/actions/auth/google'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { SeparatorWithText } from '../components/separator-with-text'
+
+interface IRegisterFormProps {
+  handleTabChange: (tab: 'login' | 'register') => void
+}
 
 const registerFormSchema = z.object({
   name: z.string({ message: 'Nome é obrigatório' }).min(1, {
@@ -33,7 +38,7 @@ const registerFormSchema = z.object({
     .min(8, { message: 'A senha deve ter pelo menos 8 caracteres' }),
 })
 
-export function RegisterForm() {
+export function RegisterForm({ handleTabChange }: IRegisterFormProps) {
   const { toast } = useToast()
 
   const form = useForm<z.infer<typeof registerFormSchema>>({
@@ -52,7 +57,27 @@ export function RegisterForm() {
   }
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    console.log(data)
+    const res = await fetch(`${env.NEXT_PUBLIC_NEXTAUTH_URL}/api/user/create`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (res.ok) {
+      toast({
+        title: 'Conta criada com sucesso!',
+        description: 'Você pode agora logar com a sua conta.',
+      })
+      handleTabChange('login')
+    } else {
+      toast({
+        title: 'Erro ao criar conta!',
+        description:
+          'Ocorreu um erro ao criar sua conta. Tente novamente mais tarde.',
+      })
+    }
   })
 
   return (
@@ -76,6 +101,7 @@ export function RegisterForm() {
                   placeholder='Insira seu nome'
                   className='w-full'
                   error={form.formState.errors.name?.message}
+                  value={undefined}
                 />
               )}
             />
@@ -88,6 +114,7 @@ export function RegisterForm() {
                   placeholder='Insira seu endereço de e-mail'
                   className='w-full'
                   error={form.formState.errors.email?.message}
+                  value={undefined}
                 />
               )}
             />
@@ -101,6 +128,7 @@ export function RegisterForm() {
                   placeholder='Insira sua senha'
                   type='password'
                   error={form.formState.errors.password?.message}
+                  value={undefined}
                 />
               )}
             />
