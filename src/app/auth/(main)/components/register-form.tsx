@@ -15,6 +15,10 @@ import { Input } from '@/components/ui/input'
 import { GoogleIcon } from '@/assets/icons/google'
 import { env } from '@/config/env'
 import { useToast } from '@/hooks/use-toast'
+import {
+  hasAccountInGoogle,
+  isEmailInUse,
+} from '@/server/actions/auth/credentials'
 import { signIn as signInGoogle } from '@/server/actions/auth/google'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -57,26 +61,42 @@ export function RegisterForm({ handleTabChange }: IRegisterFormProps) {
   }
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    const res = await fetch(`${env.NEXT_PUBLIC_NEXTAUTH_URL}/api/user/create`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    const haveAccountInGoogle = await hasAccountInGoogle(data.email)
+    const emailInUse = await isEmailInUse(data.email)
 
-    if (res.ok) {
-      toast({
-        title: 'Conta criada com sucesso!',
-        description: 'Você pode agora logar com a sua conta.',
+    if (haveAccountInGoogle) {
+      form.setError('root', {
+        message: 'Este e-mail já está em uso!',
       })
-      handleTabChange('login')
+    } else if (emailInUse) {
+      form.setError('root', {
+        message: 'Este e-mail já está em uso!',
+      })
     } else {
-      toast({
-        title: 'Erro ao criar conta!',
-        description:
-          'Ocorreu um erro ao criar sua conta. Tente novamente mais tarde.',
-      })
+      const res = await fetch(
+        `${env.NEXT_PUBLIC_NEXTAUTH_URL}/api/user/create`,
+        {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+
+      if (res.ok) {
+        toast({
+          title: 'Conta criada com sucesso!',
+          description: 'Você pode agora logar com a sua conta.',
+        })
+        handleTabChange('login')
+      } else {
+        toast({
+          title: 'Erro ao criar conta!',
+          description:
+            'Ocorreu um erro ao criar sua conta. Tente novamente mais tarde.',
+        })
+      }
     }
   })
 
@@ -132,6 +152,11 @@ export function RegisterForm({ handleTabChange }: IRegisterFormProps) {
                 />
               )}
             />
+            {form.formState.errors.root?.message && (
+              <p className='text-xs text-red-500'>
+                {form.formState.errors.root?.message}
+              </p>
+            )}
             <Button className='w-full font-medium text-white'>
               Criar conta
             </Button>
