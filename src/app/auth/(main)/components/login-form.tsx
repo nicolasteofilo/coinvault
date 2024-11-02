@@ -121,7 +121,7 @@ export function LoginForm() {
                   {...field}
                   className='w-full'
                   placeholder='Insira sua senha'
-                  type='text'
+                  type='password'
                   error={form.formState.errors.password?.message}
                   value={undefined}
                 />
