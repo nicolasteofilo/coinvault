@@ -31,7 +31,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         }
 
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/api/user/auth`,
+          `${env.NEXT_PUBLIC_NEXTAUTH_URL}/api/user/auth`,
           {
             method: 'POST',
             body: JSON.stringify(userCredentials),
@@ -56,4 +56,20 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     maxAge: 60 * 60 * 24 * 30,
   },
   adapter: PrismaAdapter(prisma),
+  events: {
+    signIn: async ({ user }) => {
+      console.log(user)
+    },
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      user && (token.user = user)
+      return token
+    },
+    async session({ session, token }) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      session = token.user as any
+      return session
+    },
+  },
 })

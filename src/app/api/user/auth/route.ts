@@ -2,6 +2,7 @@ import { prisma } from '@/server/services/database/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { User } from '@prisma/client'
+import console from 'console'
 import { hashPassword } from '../../utils/hash-passord'
 
 interface ILoginUserBody {
@@ -17,8 +18,9 @@ async function loginUserHandler(req: NextRequest) {
   const { email, password } = (await req.json()) as ILoginUserBody
 
   if (!email || !password) {
-    return NextResponse.json({ message: 'invalid inputs' }, { status: 400 })
+    return NextResponse.json({ message: 'Invalid inputs' }, { status: 400 })
   }
+
   try {
     const user = await prisma.user.findUnique({
       where: { email },
@@ -39,10 +41,8 @@ async function loginUserHandler(req: NextRequest) {
         { status: 200 }
       )
     } else {
-      return NextResponse.json(
-        { message: 'invalid credentials' },
-        { status: 401 }
-      )
+      console.log('Invalid credentials')
+      throw new Error('Invalid credentials')
     }
   } catch (e) {
     throw new Error(e instanceof Error ? e.message : String(e))
