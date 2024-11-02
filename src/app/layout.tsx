@@ -1,4 +1,6 @@
+import { Toaster } from '@/components/ui/toaster'
 import type { Metadata } from 'next'
+
 import localFont from 'next/font/local'
 import './globals.css'
 
@@ -21,6 +23,7 @@ export default function RootLayout({
     <html lang='en'>
       <body className={`${interV4Regular.className} antialiased`}>
         {children}
+        <Toaster />
       </body>
     </html>
   )
