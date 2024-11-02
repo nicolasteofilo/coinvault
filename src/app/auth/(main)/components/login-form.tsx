@@ -65,7 +65,7 @@ export function LoginForm() {
           await signIn('credentials', {
             email: data.email,
             password: data.password,
-            redirectTo: '/tools',
+            redirectTo: '/tools/portfolio',
           })
         } catch (error) {
           toast({

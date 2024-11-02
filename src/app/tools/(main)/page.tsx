@@ -1,15 +1,5 @@
-'use client'
-
-import { signOut, useSession } from 'next-auth/react'
+import { redirect } from 'next/navigation'
 
 export default function Tools() {
-  const session = useSession()
-  console.log(session)
-
-  return (
-    <div>
-      {JSON.stringify(session)}
-      <button onClick={() => signOut({ redirectTo: '/' })}>Sign out</button>
-    </div>
-  )
+  redirect('/tools/portfolio')
 }
