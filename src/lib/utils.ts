@@ -1,6 +1,20 @@
+import { env } from '@/config/env'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+export function getUrl(path?: string) {
+  const baseUrl = env.NEXT_PUBLIC_APP_URL || ''
+  const normalizedPath = path && !path.startsWith('/') ? `/${path}` : path || ''
+  return `${baseUrl}${normalizedPath}`
+}
+
+export function getInitials(name: string) {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
 }

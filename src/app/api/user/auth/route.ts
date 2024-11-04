@@ -2,7 +2,6 @@ import { prisma } from '@/server/services/database/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { User } from '@prisma/client'
-import console from 'console'
 import { hashPassword } from '../../utils/hash-passord'
 
 interface ILoginUserBody {
@@ -38,10 +37,9 @@ async function loginUserHandler(req: NextRequest) {
     if (user && user.password === hashedPassword) {
       return NextResponse.json(
         exclude(user, ['password', 'emailVerified', 'createdAt', 'updatedAt']),
-        { status: 200 }
+        { status: 200 },
       )
     } else {
-      console.log('Invalid credentials')
       throw new Error('Invalid credentials')
     }
   } catch (e) {
