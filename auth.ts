@@ -38,7 +38,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             headers: {
               'Content-Type': 'application/json',
             },
-          }
+          },
         )
 
         const user = await res.json()
@@ -57,9 +57,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   },
   adapter: PrismaAdapter(prisma),
   events: {
-    signIn: async ({ user }) => {
-      console.log(user)
-    },
+    signIn: async () => {},
   },
   callbacks: {
     async jwt({ token, user }) {

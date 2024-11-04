@@ -1,5 +1,8 @@
+'use client'
+
 import {
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarHeader,
   SidebarMenu,
@@ -20,31 +23,31 @@ import {
 
 import { Logo } from './logo'
 
-import { cn } from '@/lib/utils'
+import { cn, getInitials } from '@/lib/utils'
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 
-import console from 'console'
-import { headers } from 'next/headers'
-import { menus } from '../data/menus'
+import { Session } from 'next-auth'
+import { useSession } from 'next-auth/react'
+import { usePathname } from 'next/navigation'
+import { menusDropdownUser, menusSidebar } from '../data/menus'
+import { UserDropdown } from './user-dropdown'
 
-export async function Sidebar({ children }: { children: React.ReactNode }) {
-  const headerList = headers()
-  const pathname = (await headerList).get('x-current-path')
-
-  console.log(pathname)
+export function Sidebar({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  const { data } = useSession() as { data: Session['user'] }
 
   return (
     <SidebarProvider>
       <SidebarUI>
-        <SidebarHeader>
+        <SidebarHeader className=''>
           <Logo />
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
             <SidebarMenu className='mt-3'>
-              {menus.navMain.map((item) => {
-                const asSubMenus = !!item.items
+              {menusSidebar.navMain.map((item) => {
+                const asSubMenus = item?.items.length > 0
 
                 if (asSubMenus) {
                   return (
@@ -52,35 +55,38 @@ export async function Sidebar({ children }: { children: React.ReactNode }) {
                       key={item.title}
                       asChild
                       className='group/collapsible'
+                      defaultOpen={true}
                     >
                       <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
                           <SidebarMenuButton tooltip={item.title}>
                             {item.icon && <item.icon />}
-                            <span>{item.title}</span>
+                            <span className='text-base'>{item.title}</span>
                             <ChevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
                           <SidebarMenuSub>
-                            {item.items?.map((subItem) => (
-                              <SidebarMenuSubItem key={subItem.title}>
-                                <SidebarMenuSubButton asChild>
-                                  <Link href={subItem.url}>
-                                    {subItem.icon && <subItem.icon />}
-                                    <span
+                            {item.items?.map((subItem) => {
+                              const isActive = Boolean(subItem.url === pathname)
+
+                              return (
+                                <SidebarMenuSubItem key={subItem.title}>
+                                  <SidebarMenuSubButton asChild>
+                                    <Link
+                                      href={subItem.url}
                                       className={cn(
                                         'text-sm',
-                                        pathname === subItem.url &&
-                                          'font-semibold',
+                                        isActive && 'font-bold',
                                       )}
                                     >
+                                      {subItem.icon && <subItem.icon />}
                                       {subItem.title}
-                                    </span>
-                                  </Link>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                            ))}
+                                    </Link>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              )
+                            })}
                           </SidebarMenuSub>
                         </CollapsibleContent>
                       </SidebarMenuItem>
@@ -93,7 +99,7 @@ export async function Sidebar({ children }: { children: React.ReactNode }) {
                     key={item.title}
                     className={cn(
                       'rounded-md hover:bg-secondary',
-                      // pathname === item.url && 'bg-secondary',
+                      pathname === item.url && 'bg-secondary',
                     )}
                   >
                     <SidebarMenuButton asChild>
@@ -108,6 +114,22 @@ export async function Sidebar({ children }: { children: React.ReactNode }) {
             </SidebarMenu>
           </SidebarGroup>
         </SidebarContent>
+        <SidebarFooter>
+          <UserDropdown
+            user={{
+              name: data?.name,
+              email: data?.email,
+              image: data?.image,
+            }}
+            data={{
+              navMain: menusDropdownUser.navMain.map((item) => ({
+                ...item,
+                icon: <item.icon />,
+              })),
+            }}
+            initials={getInitials(data?.name || '')}
+          />
+        </SidebarFooter>
       </SidebarUI>
       {children}
     </SidebarProvider>

@@ -1,12 +1,9 @@
-import { getUrl } from '@/lib/utils'
 import { NextRequest, NextResponse } from 'next/server'
+import { getUrl } from './lib/utils'
 
 export default function middleware(request: NextRequest) {
   const token = request.cookies.get('authjs.session-token')
   const pathname = request.nextUrl.pathname
-
-  const headers = new Headers(request.headers)
-  headers.set('x-current-path', request.nextUrl.pathname)
 
   if (pathname === '/auth' && token) {
     return NextResponse.redirect(new URL(getUrl('/tools')))
@@ -15,10 +12,6 @@ export default function middleware(request: NextRequest) {
   if (pathname.includes('/tools') && !token) {
     return NextResponse.redirect(new URL(getUrl('/auth')))
   }
-
-  return NextResponse.next({
-    headers,
-  })
 }
 
 export const config = {

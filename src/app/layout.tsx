@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
-      <body className={`${interV4Regular.className} antialiased`}>
+      <body className={`${interV4Regular.className} dark antialiased`}>
         <SessionProvider>{children}</SessionProvider>
         <Toaster />
       </body>
