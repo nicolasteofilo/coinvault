@@ -27,15 +27,21 @@ import { cn, getInitials } from '@/lib/utils'
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 
-import { Session } from 'next-auth'
 import { useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 import { menusDropdownUser, menusSidebar } from '../data/menus'
 import { UserDropdown } from './user-dropdown'
 
+interface UserFromSession {
+  name: string
+  email: string
+  image: string
+}
+
 export function Sidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const { data } = useSession() as { data: Session['user'] }
+  const session = useSession()
+  const user = session?.data?.user as UserFromSession
 
   return (
     <SidebarProvider>
@@ -117,9 +123,9 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
         <SidebarFooter>
           <UserDropdown
             user={{
-              name: data?.name,
-              email: data?.email,
-              image: data?.image,
+              name: user?.name,
+              email: user?.email,
+              image: user?.image,
             }}
             data={{
               navMain: menusDropdownUser.navMain.map((item) => ({
@@ -127,7 +133,7 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
                 icon: <item.icon />,
               })),
             }}
-            initials={getInitials(data?.name || '')}
+            initials={getInitials(user?.name || '')}
           />
         </SidebarFooter>
       </SidebarUI>

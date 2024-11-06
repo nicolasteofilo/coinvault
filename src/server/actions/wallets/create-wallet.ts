@@ -1,15 +1,22 @@
 'use server'
+import { prisma } from '@/server/services/database/prisma'
 import { auth } from '@auth'
 
 interface CreateWalletParams {
-  name?: string
+  name: string
 }
 
 export async function createWallet({ name }: CreateWalletParams) {
   try {
     const session = await auth()
-    console.log(name)
-    console.log(session?.user?.id)
+    const userId = String(session?.user?.id)
+
+    await prisma.wallet.create({
+      data: {
+        name,
+        userId,
+      },
+    })
   } catch (error) {
     console.log(error)
   }
