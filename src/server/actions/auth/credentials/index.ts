@@ -58,6 +58,20 @@ export async function validateCredentials(
   return true
 }
 
+export async function getUserByEmail(email: string) {
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  })
+
+  if (!user) {
+    throw new Error('User nor found')
+  }
+
+  return user
+}
+
 export async function isEmailInUse(email: string): Promise<boolean> {
   const user = await prisma.user.findUnique({
     where: { email },

@@ -1,10 +1,16 @@
 import { env } from '@/config/env'
 import { prisma } from '@/server/services/database/prisma'
 import { PrismaAdapter } from '@auth/prisma-adapter'
+import { encode as encondeNextAuth } from 'next-auth/jwt'
+import { cookies } from 'next/headers'
 
-import NextAuth from 'next-auth'
+import NextAuth, { User } from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import Google from 'next-auth/providers/google'
+import Passkey from 'next-auth/providers/passkey'
+import { v4 as uuidv4 } from 'uuid'
+
+const adapter = PrismaAdapter(prisma)
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   pages: {
@@ -20,8 +26,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     }),
     Credentials({
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+        email: {},
+        password: {},
       },
 
       authorize: async (credentials) => {
@@ -44,30 +50,52 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         const user = await res.json()
 
         if (res.ok && user) {
-          return user
+          return user as User
         } else {
           return null
         }
       },
     }),
+    Passkey,
   ],
-  session: { strategy: 'jwt', maxAge: 24 * 60 * 60 },
   jwt: {
-    maxAge: 60 * 60 * 24 * 30,
+    encode: async function (params) {
+      if (params.token?.credentials) {
+        const sessionToken = uuidv4()
+
+        if (!params.token.sub) {
+          throw new Error('No user ID found in token')
+        }
+
+        const createdSession = await adapter?.createSession?.({
+          sessionToken,
+          userId: params.token.sub,
+          expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+        })
+
+        if (!createdSession) {
+          throw new Error('Failed to create session')
+        }
+
+        const cookieStore = await cookies()
+        cookieStore.set('authjs.session-token', sessionToken)
+
+        return sessionToken
+      }
+
+      return encondeNextAuth(params)
+    },
   },
-  adapter: PrismaAdapter(prisma),
-  events: {
-    signIn: async () => {},
-  },
+  adapter,
   callbacks: {
-    async jwt({ token, user }) {
-      user && (token.user = user)
+    async jwt({ token, account }) {
+      console.log({ account })
+      if (account?.provider === 'credentials') {
+        token.credentials = true
+      }
       return token
     },
-    async session({ session, token }) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      session = token.user as any
-      return session
-    },
   },
+  secret: env.AUTH_SECRET!,
+  experimental: { enableWebAuthn: true },
 })

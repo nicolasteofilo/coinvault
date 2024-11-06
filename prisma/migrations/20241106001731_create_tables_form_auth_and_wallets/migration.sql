@@ -49,6 +49,14 @@ CREATE TABLE "VerificationToken" (
     PRIMARY KEY ("identifier", "token")
 );
 
+-- CreateTable
+CREATE TABLE "Wallet" (
+    "userId" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    CONSTRAINT "Wallet_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 

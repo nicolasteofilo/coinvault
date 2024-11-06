@@ -18,6 +18,7 @@ model User {
   password      String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  Wallet        Wallet[]
 }
 
 model Account {
@@ -51,10 +52,10 @@ model Session {
   updatedAt DateTime @updatedAt
 }
 
-model VerificationToken {
-  identifier String
-  token      String
-  expires    DateTime
+model Wallet {
+  userId String
+  id     String @id @default(cuid())
+  name   String
 
-  @@id([identifier, token])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
